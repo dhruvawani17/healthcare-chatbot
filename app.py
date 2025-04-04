@@ -11,7 +11,7 @@ nltk.download('stopwords')
 # Load the lightweight GPT-2 model (runs on CPU)
 @st.cache_resource
 def load_chatbot():
-    return pipeline("text-generation", model="gpt2")
+    return pipeline("text-generation", model="sshleifer/tiny-gpt2")
 
 chatbot = load_chatbot()
 
