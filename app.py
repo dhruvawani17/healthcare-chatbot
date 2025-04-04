@@ -1,12 +1,21 @@
 import streamlit as st
+st.set_page_config(page_title="Healthcare Chatbot")  # 🔥 MUST be first Streamlit command
+
 from transformers import pipeline
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-# Download necessary NLTK data
-nltk.download('punkt')
-nltk.download('stopwords')
+# Safe downloads (check if already downloaded)
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
 # Load the lightweight GPT-2 model (runs on CPU)
 @st.cache_resource
@@ -28,11 +37,10 @@ def healthcare_chatbot(user_input):
     else:
         # Generate a response using GPT-2
         response = chatbot(user_input, max_length=100, num_return_sequences=1, do_sample=True, temperature=0.7)
-        return response[0]['generated_text']
+        return response[0]['generated_text'].strip()
 
 # Streamlit UI
 def main():
-    st.set_page_config(page_title="Healthcare Chatbot")
     st.title("🩺 Healthcare Assistant Chatbot")
 
     user_input = st.text_input("How can I assist you today?", "")
