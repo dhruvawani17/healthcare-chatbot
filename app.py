@@ -8,43 +8,42 @@ from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 nltk.download('stopwords')
 
+# Load the lightweight GPT-2 model (runs on CPU)
+@st.cache_resource
+def load_chatbot():
+    return pipeline("text-generation", model="gpt2")
 
-# Load a pre-trained Hugging Face model
-chatbot = pipeline("text-generation", model="gpt2")
+chatbot = load_chatbot()
 
-# Define healthcare-specific response logic (or use a model to generate responses)
+# Define healthcare-specific chatbot logic
 def healthcare_chatbot(user_input):
-    # Simple rule-based keywords to respond
-    if "symptom" in user_input:
+    user_input_lower = user_input.lower()
+
+    if "symptom" in user_input_lower:
         return "It seems like you're experiencing symptoms. Please consult a doctor for accurate advice."
-    elif "appointment" in user_input:
+    elif "appointment" in user_input_lower:
         return "Would you like me to schedule an appointment with a doctor?"
-    elif "medication" in user_input:
+    elif "medication" in user_input_lower:
         return "It's important to take your prescribed medications regularly. If you have concerns, consult your doctor."
     else:
-        # For other inputs, use the Hugging Face model to generate a response
-        response = chatbot(user_input, max_length=300, num_return_sequences=1)
-        # Specifies the maximum length of the generated text response, including the input and the generated tokens.
-        # If set to 3, the model generates three different possible responses based on the input.
+        # Generate a response using GPT-2
+        response = chatbot(user_input, max_length=100, num_return_sequences=1, do_sample=True, temperature=0.7)
         return response[0]['generated_text']
 
-
-# Streamlit web app interface
+# Streamlit UI
 def main():
-    # Set up the web app title and input area
-    st.title("Healthcare Assistant Chatbot")
-    
-    # Display a simple text input for user queries
+    st.set_page_config(page_title="Healthcare Chatbot")
+    st.title("🩺 Healthcare Assistant Chatbot")
+
     user_input = st.text_input("How can I assist you today?", "")
-    
-    # Display chatbot response
+
     if st.button("Submit"):
-        if user_input:
-            st.write("User: ", user_input)
+        if user_input.strip():
+            st.markdown(f"**You:** {user_input}")
             response = healthcare_chatbot(user_input)
-            st.write("Healthcare Assistant: ", response)
+            st.markdown(f"**Healthcare Assistant:** {response}")
         else:
-            st.write("Please enter a query.")
+            st.warning("Please enter a query.")
 
 if __name__ == "__main__":
     main()
